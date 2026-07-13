@@ -13,7 +13,7 @@ Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitt
 | NXDNGateway (+ NXDNParrot) | [g4klx/NXDNClients](https://github.com/g4klx/NXDNClients) | `18b4e9a` (MQTT era) |
 | DAPNETGateway | [g4klx/DAPNETGateway](https://github.com/g4klx/DAPNETGateway) | pending |
 | APRSGateway | [g4klx/APRSGateway](https://github.com/g4klx/APRSGateway) | pending |
-| DStarGateway | [g4klx/DStarGateway](https://github.com/g4klx/DStarGateway) | pending |
+| DStarGateway | [g4klx/DStarGateway](https://github.com/g4klx/DStarGateway) | `612f388` (MQTT era) |
 | MMDVMCal | [g4klx/MMDVMCal](https://github.com/g4klx/MMDVMCal) | pending |
 
 All upstream components GPL-2.0-or-later; build scripts here GPL-3.0.
