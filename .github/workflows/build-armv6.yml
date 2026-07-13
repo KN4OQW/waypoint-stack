@@ -38,6 +38,8 @@ jobs:
           git -C src/MMDVM-Host checkout "$MMDVM_HOST_SHA"
           git clone "$DMRGATEWAY_REPO" src/DMRGateway
           git -C src/DMRGateway checkout "$DMRGATEWAY_SHA"
+          git clone "$YSFCLIENTS_REPO" src/YSFClients
+          git -C src/YSFClients checkout "$YSFCLIENTS_SHA"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -55,7 +57,7 @@ jobs:
         run: |
           docker run --rm --platform linux/arm/v6 \
             -v "$PWD:/w" -w /w waypoint-raspbian-armv6:bookworm \
-            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/armv6/MMDVM-Host -v && out/armv6/DMRGateway -v"
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/armv6/MMDVM-Host -v && out/armv6/DMRGateway -v && out/armv6/YSFGateway -v"
           for b in MMDVM-Host DMRGateway; do
             arch=$(readelf -A "out/armv6/$b" | awk -F': ' '/Tag_CPU_arch:/{print $2; exit}')
             echo "$b Tag_CPU_arch=$arch"

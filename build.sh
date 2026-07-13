@@ -24,6 +24,9 @@ build_component() { # name, srcdir, binaries...
 
 build_component MMDVM-Host  src/MMDVM-Host  MMDVM-Host
 build_component DMRGateway  src/DMRGateway  DMRGateway
+# YSFClients' top Makefile builds each sub-daemon in its own directory; we ship
+# the System Fusion gateway and the local parrot (echo) for bench testing.
+build_component YSFClients  src/YSFClients  YSFGateway/YSFGateway YSFParrot/YSFParrot
 
 echo "=== artifacts"
 ls -la "$OUT"
