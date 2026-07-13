@@ -27,6 +27,8 @@ build_component DMRGateway  src/DMRGateway  DMRGateway
 # YSFClients' top Makefile builds each sub-daemon in its own directory; we ship
 # the System Fusion gateway and the local parrot (echo) for bench testing.
 build_component YSFClients  src/YSFClients  YSFGateway/YSFGateway YSFParrot/YSFParrot
+# P25Clients likewise: the P25 gateway and the local parrot (echo).
+build_component P25Clients  src/P25Clients  P25Gateway/P25Gateway P25Parrot/P25Parrot
 
 echo "=== artifacts"
 ls -la "$OUT"
