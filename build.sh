@@ -10,7 +10,7 @@ mkdir -p "$OUT"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -qq -y --no-install-recommends \
-  g++ make git ca-certificates libmosquitto-dev >/dev/null
+  g++ make git ca-certificates libmosquitto-dev nlohmann-json3-dev >/dev/null
 
 build_component() { # name, srcdir, binaries...
   local name="$1" src="$2"; shift 2
