@@ -31,6 +31,9 @@ build_component YSFClients  src/YSFClients  YSFGateway/YSFGateway YSFParrot/YSFP
 build_component P25Clients  src/P25Clients  P25Gateway/P25Gateway P25Parrot/P25Parrot
 # NXDNClients likewise: the NXDN gateway and the local parrot (echo).
 build_component NXDNClients src/NXDNClients NXDNGateway/NXDNGateway NXDNParrot/NXDNParrot
+# M17Gateway's Makefile 'all' builds just the gateway (echo/parrot is built in).
+# Pre-MQTT: no libmosquitto, no [MQTT] section — links against libpthread only.
+build_component M17Gateway  src/M17Gateway  M17Gateway
 # DStarGateway's top Makefile 'all' also builds the DGW* helper tools (text/voice
 # transmit, time server) we don't ship; build just the gateway target to keep it
 # lean and avoid depending on tools outside our scope. The binary is lowercase
