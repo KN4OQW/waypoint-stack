@@ -55,6 +55,6 @@ jobs:
           name: stack-${{ matrix.arch }}
           path: out/${{ matrix.arch }}/
 
-# armv6 (Pi Zero W) is a tracked gap: Debian armhf is armv7, so these
-# artifacts exclude armv6. Fix lands with a Raspberry Pi OS (armv6hf)
-# build container — see repo issue #1.
+# Debian armhf is armv7; Pi Zero W / Pi 1 (armv6hf) can't run these. The armv6
+# build is slow (QEMU) so it lives in build-armv6.yml, gated to run only when
+# the build inputs change (or on manual dispatch) rather than on every PR.
