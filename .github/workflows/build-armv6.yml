@@ -44,6 +44,8 @@ jobs:
           git -C src/P25Clients checkout "$P25CLIENTS_SHA"
           git clone "$NXDNCLIENTS_REPO" src/NXDNClients
           git -C src/NXDNClients checkout "$NXDNCLIENTS_SHA"
+          git clone "$DSTARGATEWAY_REPO" src/DStarGateway
+          git -C src/DStarGateway checkout "$DSTARGATEWAY_SHA"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -61,8 +63,8 @@ jobs:
         run: |
           docker run --rm --platform linux/arm/v6 \
             -v "$PWD:/w" -w /w waypoint-raspbian-armv6:bookworm \
-            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/armv6/MMDVM-Host -v && out/armv6/DMRGateway -v && out/armv6/YSFGateway -v && out/armv6/P25Gateway -v && out/armv6/NXDNGateway -v"
-          for b in MMDVM-Host DMRGateway; do
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/armv6/MMDVM-Host -v && out/armv6/DMRGateway -v && out/armv6/YSFGateway -v && out/armv6/P25Gateway -v && out/armv6/NXDNGateway -v && out/armv6/dstargateway --version"
+          for b in MMDVM-Host DMRGateway dstargateway; do
             arch=$(readelf -A "out/armv6/$b" | awk -F': ' '/Tag_CPU_arch:/{print $2; exit}')
             echo "$b Tag_CPU_arch=$arch"
             [ "$arch" = "v6" ] || { echo "ERROR: $b is not armv6 (got $arch)"; exit 1; }
