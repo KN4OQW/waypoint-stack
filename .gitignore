@@ -1,0 +1,4 @@
+# Pinned upstream sources are cloned here at build time (build.sh / CI), never committed.
+/src/
+# Build artifacts.
+/out/

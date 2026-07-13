@@ -33,6 +33,16 @@ jobs:
           git -C src/MMDVM-Host checkout "$MMDVM_HOST_SHA"
           git clone "$DMRGATEWAY_REPO" src/DMRGateway
           git -C src/DMRGateway checkout "$DMRGATEWAY_SHA"
+          git clone "$YSFCLIENTS_REPO" src/YSFClients
+          git -C src/YSFClients checkout "$YSFCLIENTS_SHA"
+          git clone "$P25CLIENTS_REPO" src/P25Clients
+          git -C src/P25Clients checkout "$P25CLIENTS_SHA"
+          git clone "$NXDNCLIENTS_REPO" src/NXDNClients
+          git -C src/NXDNClients checkout "$NXDNCLIENTS_SHA"
+          git clone "$DSTARGATEWAY_REPO" src/DStarGateway
+          git -C src/DStarGateway checkout "$DSTARGATEWAY_SHA"
+          git clone "$M17GATEWAY_REPO" src/M17Gateway
+          git -C src/M17Gateway checkout "$M17GATEWAY_SHA"
 
       - name: Set up QEMU
         if: matrix.arch != 'amd64'
@@ -48,7 +58,7 @@ jobs:
         run: |
           docker run --rm --platform ${{ matrix.platform }} \
             -v "$PWD:/w" -w /w debian:bookworm \
-            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v"
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v && out/${{ matrix.arch }}/YSFGateway -v && out/${{ matrix.arch }}/P25Gateway -v && out/${{ matrix.arch }}/NXDNGateway -v && out/${{ matrix.arch }}/dstargateway --version && out/${{ matrix.arch }}/M17Gateway --version"
 
       - uses: actions/upload-artifact@v4
         with:
