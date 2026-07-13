@@ -1,0 +1,68 @@
+name: Build stack (armv6)
+
+# Pi Zero W / Pi 1 are armv6hf; Debian armhf targets armv7 and faults on them,
+# so this builds against a self-built Raspbian armv6 base (see armv6-base.sh).
+# The base build + compile run under QEMU emulation and are slow, so — unlike
+# the fast Debian matrix in build.yml — this runs only when a build input
+# changes or on manual dispatch, not on every push/PR.
+on:
+  push:
+    branches: [main]
+    paths:
+      - pins.env
+      - build.sh
+      - armv6-base.sh
+      - .github/workflows/build-armv6.yml
+  pull_request:
+    paths:
+      - pins.env
+      - build.sh
+      - armv6-base.sh
+      - .github/workflows/build-armv6.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch pinned sources
+        run: |
+          set -e
+          source pins.env
+          git clone "$MMDVM_HOST_REPO" src/MMDVM-Host
+          git -C src/MMDVM-Host checkout "$MMDVM_HOST_SHA"
+          git clone "$DMRGATEWAY_REPO" src/DMRGateway
+          git -C src/DMRGateway checkout "$DMRGATEWAY_SHA"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build armv6hf base image (Raspbian, trust-anchored)
+        run: sudo bash armv6-base.sh
+
+      - name: Build (armv6)
+        run: |
+          docker run --rm --platform linux/arm/v6 \
+            -v "$PWD:/w" -w /w waypoint-raspbian-armv6:bookworm \
+            bash build.sh out/armv6
+
+      - name: Smoke test (version banner + armv6 ISA)
+        run: |
+          docker run --rm --platform linux/arm/v6 \
+            -v "$PWD:/w" -w /w waypoint-raspbian-armv6:bookworm \
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/armv6/MMDVM-Host -v && out/armv6/DMRGateway -v"
+          for b in MMDVM-Host DMRGateway; do
+            arch=$(readelf -A "out/armv6/$b" | awk -F': ' '/Tag_CPU_arch:/{print $2; exit}')
+            echo "$b Tag_CPU_arch=$arch"
+            [ "$arch" = "v6" ] || { echo "ERROR: $b is not armv6 (got $arch)"; exit 1; }
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stack-armv6
+          path: out/armv6/
