@@ -25,8 +25,10 @@ build_component() { # name, srcdir, binaries...
 build_component MMDVM-Host  src/MMDVM-Host  MMDVM-Host
 build_component DMRGateway  src/DMRGateway  DMRGateway
 # YSFClients' top Makefile builds each sub-daemon in its own directory; we ship
-# the System Fusion gateway and the local parrot (echo) for bench testing.
-build_component YSFClients  src/YSFClients  YSFGateway/YSFGateway YSFParrot/YSFParrot
+# the System Fusion gateway, the DG-ID gateway (the DG-ID-addressed alternative
+# Waypoint runs when "DG-ID Gateway" is enabled — mutually exclusive with
+# YSFGateway on MMDVM-Host's 3200/4200 loopback), and the local parrot (echo).
+build_component YSFClients  src/YSFClients  YSFGateway/YSFGateway DGIdGateway/DGIdGateway YSFParrot/YSFParrot
 # P25Clients likewise: the P25 gateway and the local parrot (echo).
 build_component P25Clients  src/P25Clients  P25Gateway/P25Gateway P25Parrot/P25Parrot
 # NXDNClients likewise: the NXDN gateway and the local parrot (echo).
