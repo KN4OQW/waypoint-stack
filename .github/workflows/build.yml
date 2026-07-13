@@ -1,0 +1,60 @@
+name: Build stack
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+          - arch: arm64
+            platform: linux/arm64
+          - arch: armhf
+            platform: linux/arm/v7
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch pinned sources
+        run: |
+          set -e
+          source pins.env
+          git clone "$MMDVM_HOST_REPO" src/MMDVM-Host
+          git -C src/MMDVM-Host checkout "$MMDVM_HOST_SHA"
+          git clone "$DMRGATEWAY_REPO" src/DMRGateway
+          git -C src/DMRGateway checkout "$DMRGATEWAY_SHA"
+
+      - name: Set up QEMU
+        if: matrix.arch != 'amd64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build (${{ matrix.arch }})
+        run: |
+          docker run --rm --platform ${{ matrix.platform }} \
+            -v "$PWD:/w" -w /w debian:bookworm \
+            bash build.sh out/${{ matrix.arch }}
+
+      - name: Smoke test (version banner)
+        run: |
+          docker run --rm --platform ${{ matrix.platform }} \
+            -v "$PWD:/w" -w /w debian:bookworm \
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stack-${{ matrix.arch }}
+          path: out/${{ matrix.arch }}/
+
+# armv6 (Pi Zero W) is a tracked gap: Debian armhf is armv7, so these
+# artifacts exclude armv6. Fix lands with a Raspberry Pi OS (armv6hf)
+# build container — see repo issue #1.
