@@ -37,6 +37,8 @@ jobs:
           git -C src/YSFClients checkout "$YSFCLIENTS_SHA"
           git clone "$P25CLIENTS_REPO" src/P25Clients
           git -C src/P25Clients checkout "$P25CLIENTS_SHA"
+          git clone "$NXDNCLIENTS_REPO" src/NXDNClients
+          git -C src/NXDNClients checkout "$NXDNCLIENTS_SHA"
 
       - name: Set up QEMU
         if: matrix.arch != 'amd64'
@@ -52,7 +54,7 @@ jobs:
         run: |
           docker run --rm --platform ${{ matrix.platform }} \
             -v "$PWD:/w" -w /w debian:bookworm \
-            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v && out/${{ matrix.arch }}/YSFGateway -v && out/${{ matrix.arch }}/P25Gateway -v"
+            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v && out/${{ matrix.arch }}/YSFGateway -v && out/${{ matrix.arch }}/P25Gateway -v && out/${{ matrix.arch }}/NXDNGateway -v"
 
       - uses: actions/upload-artifact@v4
         with:
