@@ -2,7 +2,7 @@
 
 Pinned, reproducibly-built g4klx digital voice daemons for [Waypoint](https://github.com/KN4OQW/waypoint).
 
-Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitto requirement). This repo pins exact upstream commits, builds them for amd64/arm64/armhf/armv6 in public CI, packages them as .debs, and carries patches only while they are in flight upstream (each patch links its upstream PR).
+Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitto requirement). This repo pins exact upstream commits, builds them for amd64/arm64/armhf in public CI, packages them as .debs, and carries patches only while they are in flight upstream (each patch links its upstream PR).
 
 | Component | Upstream | Pin |
 |---|---|---|
@@ -19,6 +19,14 @@ Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitt
 
 All upstream components GPL-2.0-or-later; build scripts here GPL-3.0.
 
-CI compiles the pinned stack — MMDVM-Host (M17 fork), DMRGateway, YSFGateway/DGIdGateway (+ YSFParrot), P25Gateway (+ P25Parrot), NXDNGateway (+ NXDNParrot), DStarGateway, and M17Gateway — for all four arches (amd64, arm64, armhf/armv7, armv6hf) and publishes artifacts. Still to pin/build: DAPNETGateway (POCSAG), the MMDVM_CM cross-mode bridges, APRSGateway, and MMDVMCal. The amd64/arm64/armhf builds run on every push/PR (`build.yml`); armv6hf (Pi Zero W / Pi 1) has its own gated workflow (`build-armv6.yml`) that runs only when a build input changes or on manual dispatch, because it builds under slow QEMU emulation.
+CI compiles the pinned stack — MMDVM-Host (M17 fork), DMRGateway, YSFGateway/DGIdGateway (+ YSFParrot), P25Gateway (+ P25Parrot), NXDNGateway (+ NXDNParrot), DStarGateway, and M17Gateway — for all three arches and publishes `.deb` artifacts. Still to pin/build: DAPNETGateway (POCSAG), the MMDVM_CM cross-mode bridges, APRSGateway, and MMDVMCal. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
 
-Debian armhf targets armv7 and faults on armv6, so the armv6hf job builds its own base image from the official Raspbian archive via `debootstrap` (`armv6-base.sh`), trust-anchored on a pinned archive-key fingerprint — no third-party vendor image, consistent with the no-telemetry stance. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
+## Supported hardware tiers
+
+| Tier | ISA | Boards |
+|---|---|---|
+| **armhf** | ARMv7 (hard-float) | Pi Zero 2 W, Pi 2, Pi 3 / 3+, Pi 4 running a 32-bit OS |
+| **arm64** | ARMv8-A | Pi 3 / 4 running a 64-bit OS |
+| **amd64** | x86-64 | CI and desktop/dev use only |
+
+**Pi Zero W and Pi 1 (ARMv6) are not supported.** Debian armhf targets ARMv7 and faults on ARMv6, and Waypoint no longer builds a Raspbian ARMv6 base. [Pi-Star](https://www.pistar.uk/) remains the recommended option for that hardware.
