@@ -1,0 +1,137 @@
+name: Publish apt repo
+
+# Publishes the .debs built by "Build stack" as a signed, static apt repository
+# on GitHub Pages (gh-pages branch).
+#
+# Trigger:
+#   - automatically after a successful "Build stack" run on main, or
+#   - manually via workflow_dispatch, passing the build run id to publish.
+on:
+  workflow_run:
+    workflows: ["Build stack"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build stack run id whose artifacts to publish"
+        required: true
+        type: string
+
+# Push the publish tree to the gh-pages branch.
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-apt
+  cancel-in-progress: false
+
+env:
+  APTLY_VERSION: "1.6.2"
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    # Only publish real, successful main builds (or an explicit manual dispatch).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    steps:
+      - name: Checkout (scripts, packaging, keyring)
+        uses: actions/checkout@v4
+
+      - name: Resolve build run id
+        id: run
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "id=${{ inputs.run_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download build artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          mkdir -p debs
+          for arch in amd64 arm64 armhf; do
+            gh run download "${{ steps.run.outputs.id }}" \
+              -R "${{ github.repository }}" \
+              -n "waypoint-stack-debs-$arch" -D "debs/$arch"
+          done
+          # Flatten every arch's .debs into one directory for aptly.
+          mkdir -p debs/all
+          find debs -name '*.deb' -exec cp -n {} debs/all/ \;
+          echo "collected $(ls debs/all/*.deb | wc -l) .deb(s)"
+
+      - name: Install aptly
+        run: |
+          curl -fsSL -o /tmp/aptly.deb \
+            "https://github.com/aptly-dev/aptly/releases/download/v${APTLY_VERSION}/aptly_${APTLY_VERSION}_linux_amd64.deb"
+          sudo dpkg -i /tmp/aptly.deb
+          aptly version
+
+      - name: Import signing key
+        id: gpg
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+          APT_SIGNING_PASSPHRASE: ${{ secrets.APT_SIGNING_PASSPHRASE }}
+        run: |
+          set -e
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          mkdir -p "$GNUPGHOME"; chmod 700 "$GNUPGHOME"
+          printf '%s' "$APT_SIGNING_KEY" | gpg --batch --import
+          printf '%s' "$APT_SIGNING_PASSPHRASE" > "$RUNNER_TEMP/passphrase"
+          chmod 600 "$RUNNER_TEMP/passphrase"
+          keyid=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/{print $5; exit}')
+          # Sanity: the committed public keyring must match the signing key.
+          committed=$(gpg --show-keys --with-colons waypoint-archive-keyring.gpg | awk -F: '/^pub:/{print $5; exit}')
+          if [ "$keyid" != "$committed" ]; then
+            echo "FATAL: secret key $keyid does not match committed keyring $committed" >&2
+            exit 1
+          fi
+          echo "gnupghome=$GNUPGHOME" >> "$GITHUB_OUTPUT"
+          echo "keyid=$keyid" >> "$GITHUB_OUTPUT"
+
+      - name: Recover previously published tree
+        run: |
+          # The published tree is the state store: carry prior pool/ versions
+          # forward so downgrades stay possible. Empty on the first publish.
+          mkdir -p previous
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            git fetch --depth 1 origin gh-pages
+            git --work-tree=previous checkout FETCH_HEAD -- . 2>/dev/null || true
+            git reset -q
+            echo "recovered $(find previous -name '*.deb' | wc -l) prior .deb(s)"
+          else
+            echo "no gh-pages yet; first publish"
+          fi
+
+      - name: Build signed publish tree
+        env:
+          GNUPGHOME: ${{ steps.gpg.outputs.gnupghome }}
+        run: |
+          scripts/publish-apt.sh \
+            --debs debs/all \
+            --output site \
+            --previous previous \
+            --gpg-key "${{ steps.gpg.outputs.keyid }}" \
+            --passphrase-file "$RUNNER_TEMP/passphrase"
+          # Serve the public keyring and the install page from the Pages root.
+          cp waypoint-archive-keyring.gpg site/
+          cp apt/waypoint.sources site/
+          cp apt/index.html site/
+          touch site/.nojekyll
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          # The pool carried forward in ./site is the full history, so a clean
+          # (orphan) branch each publish keeps gh-pages from growing unbounded.
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+          commit_message: "Publish apt repo from build run ${{ steps.run.outputs.id }}"

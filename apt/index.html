@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>waypoint-stack apt repository</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.6rem; } h2 { font-size: 1.2rem; margin-top: 2rem; }
+  code, pre { font-family: ui-monospace, monospace; }
+  pre { padding: 1rem; overflow-x: auto; border: 1px solid gray; border-radius: 6px; }
+  a { color: inherit; }
+  .muted { opacity: 0.75; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<h1>waypoint-stack apt repository</h1>
+<p>A GPG-signed, static apt repository of the pinned
+<a href="https://github.com/KN4OQW/waypoint-stack">waypoint-stack</a> digital-voice
+daemons for <strong>bookworm</strong> (armhf, arm64, amd64).</p>
+
+<h2>Install</h2>
+<p>Fetch the archive keyring and drop in a deb822 sources file, then install:</p>
+<pre><code>sudo curl -fsSL -o /usr/share/keyrings/waypoint-archive-keyring.gpg \
+  https://kn4oqw.github.io/waypoint-stack/waypoint-archive-keyring.gpg
+
+sudo curl -fsSL -o /etc/apt/sources.list.d/waypoint.sources \
+  https://kn4oqw.github.io/waypoint-stack/waypoint.sources
+
+sudo apt-get update
+sudo apt-get install waypoint-stack
+</code></pre>
+
+<p class="muted">The sources file pins trust to the keyring via
+<code>Signed-By:</code>, so only packages signed by the Waypoint archive key are
+accepted — no repository-wide trust, no <code>NO_PUBKEY</code> workarounds.</p>
+
+<h2>Downgrade / rollback</h2>
+<p>The repository intentionally retains prior package versions in
+<code>pool/</code>. To pin a specific version:</p>
+<pre><code>apt-cache madison waypoint-mmdvmhost          # list available versions
+sudo apt-get install waypoint-mmdvmhost=&lt;version&gt;
+</code></pre>
+
+<h2>Trust roots</h2>
+<p>This repo is signed by a dedicated <strong>GPG</strong> archive key
+(<a href="waypoint-archive-keyring.gpg">waypoint-archive-keyring.gpg</a>), used
+only for the apt <code>Release</code>/<code>InRelease</code>. It is separate from
+the RFC-0013 <strong>minisign</strong> release key, which remains the trust root
+for waypointd and reference data.</p>
+</body>
+</html>
