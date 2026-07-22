@@ -30,3 +30,54 @@ CI compiles the pinned stack — MMDVM-Host (M17 fork), DMRGateway, YSFGateway/D
 | **amd64** | x86-64 | CI and desktop/dev use only |
 
 **Pi Zero W and Pi 1 (ARMv6) are not supported.** Debian armhf targets ARMv7 and faults on ARMv6, and Waypoint no longer builds a Raspbian ARMv6 base. [Pi-Star](https://www.pistar.uk/) remains the recommended option for that hardware.
+
+## Packaging
+
+CI packages the built binaries into Debian `.deb`s with [nfpm](https://nfpm.goreleaser.com/) — one package per daemon, plus a `waypoint-stack` metapackage. Packages ship **binaries and a copyright doc only**: binaries install to `/usr/bin/`, and `waypointd` owns config rendering and systemd unit management, so no config files or units are shipped here. The configs live in [`packaging/`](packaging/).
+
+### Version convention
+
+Daemon packages are versioned `0~git<7-sha>+wp<n>`:
+
+- `<7-sha>` is the upstream commit the binary was built from (the `pins.env` SHA), so the package version names its exact source.
+- `+wp<n>` is the Waypoint packaging revision against that same pin. It increments for packaging-only changes (a dependency fix, a doc change) and resets to `wp1` whenever the pin moves.
+
+The `0~git` prefix sorts *below* any future real upstream release version, so a tagged upstream release will always upgrade cleanly over these snapshots.
+
+The `waypoint-stack` metapackage (`arch: all`) carries a single stack version (currently `0.1.0`) and depends on the **exact** versions of every daemon package. Installing it pulls the whole stack at one known-good version set; bump its version whenever any daemon package changes.
+
+### Packages
+
+| Package | Binary (`/usr/bin/`) | Upstream | Pin |
+|---|---|---|---|
+| `waypoint-mmdvmhost` | `MMDVM-Host` | [KN4OQW/MMDVM-Host](https://github.com/KN4OQW/MMDVM-Host) (fork of g4klx) | `fd4a6a4` |
+| `waypoint-dmrgateway` | `DMRGateway` | [g4klx/DMRGateway](https://github.com/g4klx/DMRGateway) | `79edbc4` |
+| `waypoint-ysfgateway` | `YSFGateway` | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` |
+| `waypoint-dgidgateway` | `DGIdGateway` | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` |
+| `waypoint-ysfparrot` | `YSFParrot` | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` |
+| `waypoint-p25gateway` | `P25Gateway` | [g4klx/P25Clients](https://github.com/g4klx/P25Clients) | `9751c6e` |
+| `waypoint-p25parrot` | `P25Parrot` | [g4klx/P25Clients](https://github.com/g4klx/P25Clients) | `9751c6e` |
+| `waypoint-nxdngateway` | `NXDNGateway` | [g4klx/NXDNClients](https://github.com/g4klx/NXDNClients) | `18b4e9a` |
+| `waypoint-nxdnparrot` | `NXDNParrot` | [g4klx/NXDNClients](https://github.com/g4klx/NXDNClients) | `18b4e9a` |
+| `waypoint-dstargateway` | `dstargateway` | [g4klx/DStarGateway](https://github.com/g4klx/DStarGateway) | `612f388` |
+| `waypoint-m17gateway` | `M17Gateway` | [g4klx/M17Gateway](https://github.com/g4klx/M17Gateway) | `c72b989` |
+| `waypoint-stack` | *(metapackage, `arch: all`)* | — | pins all of the above at exact versions |
+
+### Dependencies
+
+Runtime dependencies are **measured, not guessed** — `dpkg-shlibdeps` against the built armhf binaries. The MQTT daemons (MMDVM-Host, DMRGateway, the YSF/DG-ID/P25/NXDN gateways, dstargateway) depend on `libc6`, `libgcc-s1`, `libmosquitto1` and `libstdc++6`. `M17Gateway` and the parrots do not link `libmosquitto1` (`M17Gateway` is pre-MQTT; the parrots are local echo). Nothing links a Boost runtime library, so no Boost dependency is declared; `libssl3` is pulled transitively through `libmosquitto1`.
+
+### Building and testing packages locally
+
+```sh
+# Fetch the pinned sources (see .github/workflows/build.yml for the exact clone
+# steps), then build the binaries for an arch into out/<arch>/:
+docker run --rm -v "$PWD:/w" -w /w debian:bookworm bash build.sh out/amd64
+
+# Package every daemon + the metapackage into debs/<arch>/ (needs nfpm on PATH):
+packaging/build-debs.sh amd64 out/amd64 debs/amd64
+
+# Install-test the debs in a clean container of the matching arch:
+docker run --rm -v "$PWD/debs/amd64:/debs:ro" -v "$PWD/packaging:/packaging:ro" \
+  debian:bookworm bash /packaging/install-test.sh
+```
