@@ -81,3 +81,8 @@ packaging/build-debs.sh amd64 out/amd64 debs/amd64
 docker run --rm -v "$PWD/debs/amd64:/debs:ro" -v "$PWD/packaging:/packaging:ro" \
   debian:bookworm bash /packaging/install-test.sh
 ```
+Debian armhf targets armv7 and faults on armv6, so the armv6hf job builds its own base image from the official Raspbian archive via `debootstrap` (`armv6-base.sh`), trust-anchored on a pinned archive-key fingerprint — no third-party vendor image, consistent with the no-telemetry stance. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
+
+## systemd
+
+`systemd/waypoint-bus@.service` is the templated unit for an RFC-0003 mode bus (`waypoint-bus@<id>.service`), per [RFC-0003 Addendum A §7](https://github.com/KN4OQW/waypoint/blob/main/docs/rfcs/0003a-loopback-handoff.md). waypointd enables/disables and starts/stops each instance on apply; a DMR bus multiplexes on DMRGateway, a YSF/NXDN bus displaces its gateway (the render + apply enforce the mutual exclusion, so the template needs no per-instance `Conflicts=`).
