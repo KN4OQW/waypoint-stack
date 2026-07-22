@@ -81,7 +81,50 @@ packaging/build-debs.sh amd64 out/amd64 debs/amd64
 docker run --rm -v "$PWD/debs/amd64:/debs:ro" -v "$PWD/packaging:/packaging:ro" \
   debian:bookworm bash /packaging/install-test.sh
 ```
-Debian armhf targets armv7 and faults on armv6, so the armv6hf job builds its own base image from the official Raspbian archive via `debootstrap` (`armv6-base.sh`), trust-anchored on a pinned archive-key fingerprint — no third-party vendor image, consistent with the no-telemetry stance. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
+## Installing from the apt repo
+
+The built `.debs` are published as a **GPG-signed, static apt repository** on GitHub Pages: [`https://kn4oqw.github.io/waypoint-stack`](https://kn4oqw.github.io/waypoint-stack) (`bookworm`, component `main`, arches armhf/arm64/amd64). Fetch the archive keyring, drop in a deb822 sources file, and install:
+
+```sh
+# 1. Trust the Waypoint archive key (served from the Pages site).
+sudo curl -fsSL -o /usr/share/keyrings/waypoint-archive-keyring.gpg \
+  https://kn4oqw.github.io/waypoint-stack/waypoint-archive-keyring.gpg
+
+# 2. Add the deb822 source (also downloadable as .../waypoint.sources).
+sudo tee /etc/apt/sources.list.d/waypoint.sources >/dev/null <<'EOF'
+Types: deb
+URIs: https://kn4oqw.github.io/waypoint-stack
+Suites: bookworm
+Components: main
+Signed-By: /usr/share/keyrings/waypoint-archive-keyring.gpg
+EOF
+
+# 3. Install.
+sudo apt-get update
+sudo apt-get install waypoint-stack
+```
+
+`Signed-By:` binds trust to this one keyring, so apt accepts only packages signed by the Waypoint archive key — the repo is never a system-wide trust anchor, and there are no `NO_PUBKEY` workarounds.
+
+### Downgrade / rollback
+
+The repository **intentionally retains prior package versions in `pool/`** (each publish carries the previous pool forward). apt can therefore install or roll back to any version that was ever published:
+
+```sh
+apt-cache madison waypoint-mmdvmhost           # list available versions
+sudo apt-get install waypoint-mmdvmhost=<version>
+```
+
+### Signing keys — two roots, two scopes
+
+| Key | Type | Scope | Location |
+|---|---|---|---|
+| Waypoint **archive** key | GPG (RSA 4096) | Signs **only** the apt `Release`/`InRelease`. apt's trust model requires GPG. | Private key in the `APT_SIGNING_KEY` Actions secret (+ `APT_SIGNING_PASSPHRASE`); public key committed as [`waypoint-archive-keyring.gpg`](waypoint-archive-keyring.gpg) and served from Pages. |
+| RFC-0013 **release** key | minisign | Trust root for **waypointd and reference data**. Unrelated to apt. | Per RFC-0013. |
+
+These are deliberately separate: the GPG archive key exists because apt requires GPG, while minisign remains the trust root for everything Waypoint ships outside the package repo. Compromise or rotation of one does not affect the other.
+
+The apt repo is produced by [`scripts/publish-apt.sh`](scripts/publish-apt.sh) (aptly) and deployed by [`.github/workflows/publish-apt.yml`](.github/workflows/publish-apt.yml) after each successful `main` build.
 
 ## systemd
 
