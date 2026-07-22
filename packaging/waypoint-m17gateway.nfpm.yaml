@@ -1,0 +1,35 @@
+# nfpm config for waypoint-m17gateway. PKG_ARCH is set in the environment and binaries are staged
+# into packaging/staging/ by packaging/build-debs.sh; the
+# version is pinned to the upstream commit (see pins.env: M17GATEWAY_SHA).
+# Pre-MQTT: this daemon does NOT link libmosquitto (no MQTT dependency).
+name: waypoint-m17gateway
+arch: ${PKG_ARCH}
+platform: linux
+version: "0~gitc72b989+wp1"
+version_schema: none
+section: hamradio
+priority: optional
+maintainer: "Waypoint <clintchance@gmail.com>"
+vendor: Waypoint
+homepage: https://github.com/KN4OQW/waypoint-stack
+license: GPL-2.0-or-later
+description: |
+  M17 reflector gateway (pre-MQTT).
+
+  Connects the M17-restored MMDVM-Host fork to M17 reflectors. Still pre-MQTT
+  (logs to the console/journal rather than publishing MQTT status). Ships the
+  binary only; configuration and systemd units are rendered and managed by
+  waypointd.
+depends:
+  - libc6 (>= 2.34)
+  - libgcc-s1 (>= 3.5)
+  - libstdc++6 (>= 11)
+contents:
+  - src: packaging/staging/M17Gateway
+    dst: /usr/bin/M17Gateway
+    file_info:
+      mode: 0755
+  - src: packaging/copyright
+    dst: /usr/share/doc/waypoint-m17gateway/copyright
+    file_info:
+      mode: 0644

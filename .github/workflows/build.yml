@@ -9,19 +9,33 @@ on:
 permissions:
   contents: read
 
+env:
+  NFPM_VERSION: "2.43.0"
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          # amd64: native on the x86-64 runner (CI/dev convenience).
           - arch: amd64
+            runner: ubuntu-24.04
             platform: linux/amd64
+            qemu: false
+          # arm64: native on the arm64 runner (Pi 3/4 64-bit).
           - arch: arm64
+            runner: ubuntu-24.04-arm
             platform: linux/arm64
+            qemu: false
+          # armhf: ARMv7 container on the arm64 runner. Server-class ARMv8
+          # (the runner) does not execute aarch32, so this runs under QEMU.
           - arch: armhf
+            runner: ubuntu-24.04-arm
             platform: linux/arm/v7
+            qemu: true
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +59,7 @@ jobs:
           git -C src/M17Gateway checkout "$M17GATEWAY_SHA"
 
       - name: Set up QEMU
-        if: matrix.arch != 'amd64'
+        if: matrix.qemu
         uses: docker/setup-qemu-action@v3
 
       - name: Build (${{ matrix.arch }})
@@ -54,17 +68,60 @@ jobs:
             -v "$PWD:/w" -w /w debian:bookworm \
             bash build.sh out/${{ matrix.arch }}
 
-      - name: Smoke test (version banner)
+      - name: Install nfpm
         run: |
-          docker run --rm --platform ${{ matrix.platform }} \
-            -v "$PWD:/w" -w /w debian:bookworm \
-            bash -c "apt-get update -qq && apt-get install -qq -y libmosquitto1 >/dev/null; out/${{ matrix.arch }}/MMDVM-Host -v && out/${{ matrix.arch }}/DMRGateway -v && out/${{ matrix.arch }}/YSFGateway -v && out/${{ matrix.arch }}/P25Gateway -v && out/${{ matrix.arch }}/NXDNGateway -v && out/${{ matrix.arch }}/dstargateway --version && out/${{ matrix.arch }}/M17Gateway --version"
+          host_arch="$(dpkg --print-architecture)"
+          curl -fsSL -o /tmp/nfpm.deb \
+            "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_${host_arch}.deb"
+          sudo dpkg -i /tmp/nfpm.deb
+          nfpm --version
+
+      - name: Package .debs (${{ matrix.arch }})
+        run: packaging/build-debs.sh ${{ matrix.arch }} out/${{ matrix.arch }} debs/${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: stack-${{ matrix.arch }}
-          path: out/${{ matrix.arch }}/
+          name: waypoint-stack-debs-${{ matrix.arch }}
+          path: debs/${{ matrix.arch }}/*.deb
+          if-no-files-found: error
 
-# Debian armhf is armv7; Pi Zero W / Pi 1 (armv6hf) can't run these. The armv6
-# build is slow (QEMU) so it lives in build-armv6.yml, gated to run only when
-# the build inputs change (or on manual dispatch) rather than on every PR.
+  install-test:
+    name: install-test (${{ matrix.arch }})
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+            platform: linux/amd64
+            qemu: false
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            qemu: false
+          - arch: armhf
+            runner: ubuntu-24.04-arm
+            platform: linux/arm/v7
+            qemu: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: waypoint-stack-debs-${{ matrix.arch }}
+          path: debs
+
+      - name: Set up QEMU
+        if: matrix.qemu
+        uses: docker/setup-qemu-action@v3
+
+      # Fresh container of the matching arch: dpkg -i the metapackage + daemons,
+      # resolve the declared deps, and run every binary's version banner. A binary
+      # that needs an undeclared shared library fails here.
+      - name: Install + probe (${{ matrix.arch }})
+        run: |
+          docker run --rm --platform ${{ matrix.platform }} \
+            -v "$PWD/debs:/debs:ro" -v "$PWD/packaging:/packaging:ro" \
+            debian:bookworm bash /packaging/install-test.sh

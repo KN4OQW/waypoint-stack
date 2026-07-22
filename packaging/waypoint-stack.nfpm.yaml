@@ -1,0 +1,41 @@
+# nfpm config for the waypoint-stack metapackage. Architecture-independent
+# (arch: all): it ships no binaries, only exact-version dependencies on every
+# daemon package, so installing one version string pins the whole stack.
+#
+# Bump this version (and the pinned dependency versions below) whenever any
+# daemon package changes — an upstream pin bump or a +wp packaging revision.
+name: waypoint-stack
+arch: all
+platform: linux
+version: "0.1.0"
+section: hamradio
+priority: optional
+maintainer: "Waypoint <clintchance@gmail.com>"
+vendor: Waypoint
+homepage: https://github.com/KN4OQW/waypoint-stack
+license: GPL-2.0-or-later
+description: |
+  Waypoint digital voice daemon stack (metapackage).
+
+  Depends on the exact pinned versions of every Waypoint daemon package
+  (MMDVM-Host, DMRGateway, the YSF/DG-ID/P25/NXDN gateways and parrots,
+  DStarGateway and M17Gateway). Install this to pull the whole stack at one
+  known-good version set. Configuration and systemd units are rendered and
+  managed by waypointd.
+depends:
+  - waypoint-mmdvmhost (= 0~gitfd4a6a4+wp1)
+  - waypoint-dmrgateway (= 0~git79edbc4+wp1)
+  - waypoint-ysfgateway (= 0~git2b480aa+wp1)
+  - waypoint-dgidgateway (= 0~git2b480aa+wp1)
+  - waypoint-ysfparrot (= 0~git2b480aa+wp1)
+  - waypoint-p25gateway (= 0~git9751c6e+wp1)
+  - waypoint-p25parrot (= 0~git9751c6e+wp1)
+  - waypoint-nxdngateway (= 0~git18b4e9a+wp1)
+  - waypoint-nxdnparrot (= 0~git18b4e9a+wp1)
+  - waypoint-dstargateway (= 0~git612f388+wp1)
+  - waypoint-m17gateway (= 0~gitc72b989+wp1)
+contents:
+  - src: packaging/copyright
+    dst: /usr/share/doc/waypoint-stack/copyright
+    file_info:
+      mode: 0644

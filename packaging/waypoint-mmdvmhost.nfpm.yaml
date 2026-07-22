@@ -1,0 +1,36 @@
+# nfpm config for waypoint-mmdvmhost. PKG_ARCH is set in the environment and
+# binaries are staged into packaging/staging/ by packaging/build-debs.sh, so one
+# file packages every arch; the version is pinned to the upstream commit (see
+# pins.env: MMDVM_HOST_SHA).
+name: waypoint-mmdvmhost
+arch: ${PKG_ARCH}
+platform: linux
+version: "0~gitfd4a6a4+wp1"
+version_schema: none
+section: hamradio
+priority: optional
+maintainer: "Waypoint <clintchance@gmail.com>"
+vendor: Waypoint
+homepage: https://github.com/KN4OQW/waypoint-stack
+license: GPL-2.0-or-later
+description: |
+  MMDVM modem host daemon, M17-restored Waypoint fork.
+
+  Keys DMR, D-Star, System Fusion, P25, NXDN, POCSAG and M17 on an MMDVM
+  board and speaks the MQTT data plane. Built from the Waypoint MMDVM-Host
+  fork (g4klx + M17 restored). Ships the binary only; configuration and
+  systemd units are rendered and managed by waypointd.
+depends:
+  - libc6 (>= 2.34)
+  - libgcc-s1 (>= 3.5)
+  - libmosquitto1 (>= 1.6)
+  - libstdc++6 (>= 11)
+contents:
+  - src: packaging/staging/MMDVM-Host
+    dst: /usr/bin/MMDVM-Host
+    file_info:
+      mode: 0755
+  - src: packaging/copyright
+    dst: /usr/share/doc/waypoint-mmdvmhost/copyright
+    file_info:
+      mode: 0644

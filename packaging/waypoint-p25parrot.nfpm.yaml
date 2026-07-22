@@ -1,0 +1,34 @@
+# nfpm config for waypoint-p25parrot. PKG_ARCH is set in the environment and binaries are staged
+# into packaging/staging/ by packaging/build-debs.sh; the
+# version is pinned to the upstream commit (see pins.env: P25CLIENTS_SHA).
+# The parrot does not link libmosquitto (no MQTT dependency).
+name: waypoint-p25parrot
+arch: ${PKG_ARCH}
+platform: linux
+version: "0~git9751c6e+wp1"
+version_schema: none
+section: hamradio
+priority: optional
+maintainer: "Waypoint <clintchance@gmail.com>"
+vendor: Waypoint
+homepage: https://github.com/KN4OQW/waypoint-stack
+license: GPL-2.0-or-later
+description: |
+  P25 echo/parrot test service.
+
+  Local P25 echo service for loopback testing. Built from P25Clients. Ships
+  the binary only; configuration and systemd units are rendered and managed
+  by waypointd.
+depends:
+  - libc6 (>= 2.34)
+  - libgcc-s1 (>= 3.5)
+  - libstdc++6 (>= 5.2)
+contents:
+  - src: packaging/staging/P25Parrot
+    dst: /usr/bin/P25Parrot
+    file_info:
+      mode: 0755
+  - src: packaging/copyright
+    dst: /usr/share/doc/waypoint-p25parrot/copyright
+    file_info:
+      mode: 0644

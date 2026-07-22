@@ -1,0 +1,42 @@
+Waypoint stack — packaged g4klx digital voice daemons
+======================================================
+
+The binary shipped in this package is an unmodified build of an upstream
+g4klx (or Waypoint-forked) source tree, pinned to an exact commit. The
+package version encodes that commit: a version of the form
+
+    0~git<7-char-sha>+wp<n>
+
+was built from upstream commit <7-char-sha>; the +wp<n> suffix is the
+Waypoint packaging revision against that same pin (it increments for
+packaging-only changes and resets to wp1 whenever the pin moves).
+
+This package ships the binary and this document only. Configuration files
+and systemd units are NOT shipped here — waypointd renders configuration
+and manages the daemon units on the host.
+
+Upstream sources and their licenses:
+
+  MMDVM-Host   https://github.com/KN4OQW/MMDVM-Host  (fork of g4klx/MMDVMHost)
+  DMRGateway   https://github.com/g4klx/DMRGateway
+  YSFClients   https://github.com/g4klx/YSFClients
+  P25Clients   https://github.com/g4klx/P25Clients
+  NXDNClients  https://github.com/g4klx/NXDNClients
+  DStarGateway https://github.com/g4klx/DStarGateway
+  M17Gateway   https://github.com/g4klx/M17Gateway
+
+All upstream components are licensed GPL-2.0-or-later. The packaging and
+build scripts in https://github.com/KN4OQW/waypoint-stack are GPL-3.0.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or (at
+    your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    General Public License for more details.
+
+On a Debian system the full GPL-2 text is in
+/usr/share/common-licenses/GPL-2.
