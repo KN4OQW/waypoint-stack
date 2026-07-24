@@ -125,3 +125,67 @@ jobs:
           docker run --rm --platform ${{ matrix.platform }} \
             -v "$PWD/debs:/debs:ro" -v "$PWD/packaging:/packaging:ro" \
             debian:bookworm bash /packaging/install-test.sh
+
+  # Assemble every built .deb into one signed apt repository and publish it to
+  # GitHub Pages at https://kn4oqw.github.io/waypoint-stack. The Waypoint image
+  # (KN4OQW/waypoint) installs the stack from this repo as a deb822 source and
+  # pins the archive keyring by sha256, so publish-apt.sh asserts the exported
+  # keyring still matches that pin. Runs on push to main / manual dispatch, not on
+  # PRs (a fork PR cannot access the signing secret, and must not publish).
+  publish:
+    name: publish apt repo
+    needs: [build, install-test]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download built .debs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: waypoint-stack-debs-*
+          path: incoming
+
+      - name: Assemble + sign the apt repository
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+          APT_SIGNING_PASSPHRASE: ${{ secrets.APT_SIGNING_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APT_SIGNING_KEY:-}" ] || [ -z "${APT_SIGNING_PASSPHRASE:-}" ]; then
+            echo "::error::APT_SIGNING_KEY / APT_SIGNING_PASSPHRASE not set — cannot sign the repo."
+            exit 1
+          fi
+          sudo apt-get update
+          sudo apt-get install -y apt-utils
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          install -d -m 700 "$GNUPGHOME"
+          printf '%s' "$APT_SIGNING_KEY" | gpg --batch --import
+          packaging/publish-apt.sh incoming public
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  # Deploy the signed repo to Pages. Isolated from the build matrix so it alone
+  # carries the elevated Pages permissions. Serialized on the "pages" group so
+  # concurrent main pushes cannot race a half-published repo.
+  deploy:
+    name: deploy to Pages
+    needs: publish
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
