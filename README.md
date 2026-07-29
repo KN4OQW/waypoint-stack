@@ -85,4 +85,4 @@ Debian armhf targets armv7 and faults on armv6, so the armv6hf job builds its ow
 
 ## systemd
 
-`systemd/waypoint-bus@.service` is the templated unit for an RFC-0003 mode bus (`waypoint-bus@<id>.service`), per [RFC-0003 Addendum A §7](https://github.com/KN4OQW/waypoint/blob/main/docs/rfcs/0003a-loopback-handoff.md). waypointd enables/disables and starts/stops each instance on apply; a DMR bus multiplexes on DMRGateway, a YSF/NXDN bus displaces its gateway (the render + apply enforce the mutual exclusion, so the template needs no per-instance `Conflicts=`).
+`systemd/waypoint-bus@.service` is the templated unit for an RFC-0003 mode bus (`waypoint-bus@<id>.service`), per [RFC-0003 Addendum A §7](https://github.com/KN4OQW/waypoint/discussions/157). waypointd enables/disables and starts/stops each instance on apply; a DMR bus multiplexes on DMRGateway, a YSF/NXDN bus displaces its gateway (the render + apply enforce the mutual exclusion, so the template needs no per-instance `Conflicts=`).

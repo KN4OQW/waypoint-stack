@@ -1,6 +1,6 @@
 [Unit]
 Description=Waypoint mode bus %i (RFC-0003 / Addendum A)
-Documentation=https://github.com/KN4OQW/waypoint/blob/main/docs/rfcs/0003a-loopback-handoff.md
+Documentation=https://github.com/KN4OQW/waypoint/discussions/157
 # A DMR bus MULTIPLEXES on DMRGateway (it dials the bus as one [DMR Network N]); a
 # YSF/NXDN bus DISPLACES its gateway (binds the mode's loopback). Order after both
 # so whatever it rides or replaces is settled first. The mutual exclusion with a
