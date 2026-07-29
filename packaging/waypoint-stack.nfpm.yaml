@@ -7,7 +7,7 @@
 name: waypoint-stack
 arch: all
 platform: linux
-version: "0.1.0"
+version: "0.2.0"
 section: hamradio
 priority: optional
 maintainer: "Waypoint <clintchance@gmail.com>"
@@ -19,9 +19,9 @@ description: |
 
   Depends on the exact pinned versions of every Waypoint daemon package
   (MMDVM-Host, DMRGateway, the YSF/DG-ID/P25/NXDN gateways and parrots,
-  DStarGateway and M17Gateway). Install this to pull the whole stack at one
-  known-good version set. Configuration and systemd units are rendered and
-  managed by waypointd.
+  DStarGateway, M17Gateway and the DAPNET paging gateway). Install this to pull
+  the whole stack at one known-good version set. Configuration and systemd units
+  are rendered and managed by waypointd.
 depends:
   - waypoint-mmdvmhost (= 0~gitfd4a6a4+wp1)
   - waypoint-dmrgateway (= 0~git79edbc4+wp1)
@@ -34,6 +34,7 @@ depends:
   - waypoint-nxdnparrot (= 0~git18b4e9a+wp1)
   - waypoint-dstargateway (= 0~git612f388+wp1)
   - waypoint-m17gateway (= 0~gitc72b989+wp1)
+  - waypoint-dapnetgateway (= 0~git5527546+wp1)
 contents:
   - src: packaging/copyright
     dst: /usr/share/doc/waypoint-stack/copyright

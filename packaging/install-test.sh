@@ -34,7 +34,7 @@ if [ -n "$bad" ]; then
 fi
 
 echo "=== version/help probe per binary"
-BINS="MMDVM-Host DMRGateway YSFGateway DGIdGateway YSFParrot P25Gateway P25Parrot NXDNGateway NXDNParrot dstargateway M17Gateway"
+BINS="MMDVM-Host DMRGateway YSFGateway DGIdGateway YSFParrot P25Gateway P25Parrot NXDNGateway NXDNParrot dstargateway M17Gateway DAPNETGateway"
 fail=0
 for b in $BINS; do
   path="/usr/bin/$b"
