@@ -19,7 +19,9 @@ Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitt
 
 All upstream components GPL-2.0-or-later; build scripts here GPL-3.0.
 
-CI compiles the pinned stack — MMDVM-Host (M17 fork), DMRGateway, YSFGateway/DGIdGateway (+ YSFParrot), P25Gateway (+ P25Parrot), NXDNGateway (+ NXDNParrot), DStarGateway, M17Gateway, and DAPNETGateway — for all three arches and publishes `.deb` artifacts. Still to pin/build: the MMDVM_CM cross-mode bridges, APRSGateway, and MMDVMCal. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
+CI compiles the pinned stack — MMDVM-Host (M17 fork), DMRGateway, YSFGateway/DGIdGateway (+ YSFParrot), P25Gateway (+ P25Parrot), NXDNGateway (+ NXDNParrot), DStarGateway, M17Gateway, and DAPNETGateway — for all three arches and publishes `.deb` artifacts. That is every daemon Waypoint's eight modes need. Still to pin/build: APRSGateway and MMDVMCal. Tracked in [waypoint#5](https://github.com/KN4OQW/waypoint/issues/5) (MQTT-native status pipeline).
+
+The **MMDVM_CM** cross-mode bridges are no longer on that list. Waypoint retired the per-bridge surface in favour of the RFC-0003 bus (a named bus with modes attached, rather than a daemon per mode pair), so those binaries are never needed — see `docs/config-coverage.md` §3 in the waypoint repo.
 
 ## Supported hardware tiers
 
