@@ -57,6 +57,8 @@ jobs:
           git -C src/DStarGateway checkout "$DSTARGATEWAY_SHA"
           git clone "$M17GATEWAY_REPO" src/M17Gateway
           git -C src/M17Gateway checkout "$M17GATEWAY_SHA"
+          git clone "$DAPNETGATEWAY_REPO" src/DAPNETGateway
+          git -C src/DAPNETGateway checkout "$DAPNETGATEWAY_SHA"
 
       - name: Set up QEMU
         if: matrix.qemu

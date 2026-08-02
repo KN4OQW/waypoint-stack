@@ -36,6 +36,10 @@ build_component NXDNClients src/NXDNClients NXDNGateway/NXDNGateway NXDNParrot/N
 # M17Gateway's Makefile 'all' builds just the gateway (echo/parrot is built in).
 # Pre-MQTT: no libmosquitto, no [MQTT] section — links against libpthread only.
 build_component M17Gateway  src/M17Gateway  M17Gateway
+# DAPNETGateway's Makefile default target builds the one binary in the repo root.
+# MQTT-era: links libmosquitto and includes nlohmann/json, both already in the
+# apt-get line above; no Boost.
+build_component DAPNETGateway src/DAPNETGateway DAPNETGateway
 # DStarGateway's top Makefile 'all' also builds the DGW* helper tools (text/voice
 # transmit, time server) we don't ship; build just the gateway target to keep it
 # lean and avoid depending on tools outside our scope. The binary is lowercase
