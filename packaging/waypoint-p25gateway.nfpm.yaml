@@ -4,8 +4,16 @@
 name: waypoint-p25gateway
 arch: ${PKG_ARCH}
 platform: linux
-version: "0~git9751c6e+wp1"
+# Version: 0~git<upstream-date>.<7-sha>+wp<n>, epoch 1. The date makes the version
+# ORDERED — a bare sha is not, so with more than one version in the pool apt would
+# pick the highest-sorting sha rather than the newest build. The epoch is what
+# carries that change: without it a date-prefixed version sorts BELOW the old
+# sha-only one whenever the sha began with a letter (dpkg compares the leading
+# non-digit run first), and those packages could never upgrade. See README.md,
+# "Version convention".
+version: "0~git20260608.9751c6e+wp1"
 version_schema: none
+epoch: "1"
 section: hamradio
 priority: optional
 maintainer: "Waypoint <clintchance@gmail.com>"

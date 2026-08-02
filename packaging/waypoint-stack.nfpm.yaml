@@ -4,10 +4,15 @@
 #
 # Bump this version (and the pinned dependency versions below) whenever any
 # daemon package changes — an upstream pin bump or a +wp packaging revision.
+#
+# The dependency pins carry the daemons' epoch (1:) because an exact-version
+# relation must name the whole version, epoch included; dropping it would match
+# nothing and make this package uninstallable. This metapackage itself needs no
+# epoch — its own version is plain semver and was already ordered.
 name: waypoint-stack
 arch: all
 platform: linux
-version: "0.2.0"
+version: "0.3.0"
 section: hamradio
 priority: optional
 maintainer: "Waypoint <clintchance@gmail.com>"
@@ -23,18 +28,18 @@ description: |
   the whole stack at one known-good version set. Configuration and systemd units
   are rendered and managed by waypointd.
 depends:
-  - waypoint-mmdvmhost (= 0~gitfd4a6a4+wp1)
-  - waypoint-dmrgateway (= 0~git79edbc4+wp1)
-  - waypoint-ysfgateway (= 0~git2b480aa+wp1)
-  - waypoint-dgidgateway (= 0~git2b480aa+wp1)
-  - waypoint-ysfparrot (= 0~git2b480aa+wp1)
-  - waypoint-p25gateway (= 0~git9751c6e+wp1)
-  - waypoint-p25parrot (= 0~git9751c6e+wp1)
-  - waypoint-nxdngateway (= 0~git18b4e9a+wp1)
-  - waypoint-nxdnparrot (= 0~git18b4e9a+wp1)
-  - waypoint-dstargateway (= 0~git612f388+wp1)
-  - waypoint-m17gateway (= 0~gitc72b989+wp1)
-  - waypoint-dapnetgateway (= 0~git5527546+wp1)
+  - waypoint-mmdvmhost (= 1:0~git20260729.71e598c+wp1)
+  - waypoint-dmrgateway (= 1:0~git20260406.79edbc4+wp1)
+  - waypoint-ysfgateway (= 1:0~git20260410.2b480aa+wp1)
+  - waypoint-dgidgateway (= 1:0~git20260410.2b480aa+wp1)
+  - waypoint-ysfparrot (= 1:0~git20260410.2b480aa+wp1)
+  - waypoint-p25gateway (= 1:0~git20260608.9751c6e+wp1)
+  - waypoint-p25parrot (= 1:0~git20260608.9751c6e+wp1)
+  - waypoint-nxdngateway (= 1:0~git20260405.18b4e9a+wp1)
+  - waypoint-nxdnparrot (= 1:0~git20260405.18b4e9a+wp1)
+  - waypoint-dstargateway (= 1:0~git20260404.612f388+wp1)
+  - waypoint-m17gateway (= 1:0~git20250709.c72b989+wp1)
+  - waypoint-dapnetgateway (= 1:0~git20260323.5527546+wp1)
 contents:
   - src: packaging/copyright
     dst: /usr/share/doc/waypoint-stack/copyright
