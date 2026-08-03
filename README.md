@@ -124,4 +124,6 @@ Debian armhf targets armv7 and faults on armv6, so the armv6hf job builds its ow
 
 ## systemd
 
-`systemd/waypoint-bus@.service` is the templated unit for an RFC-0003 mode bus (`waypoint-bus@<id>.service`), per [RFC-0003 Addendum A §7](https://github.com/KN4OQW/waypoint/blob/main/docs/rfcs/0003a-loopback-handoff.md). waypointd enables/disables and starts/stops each instance on apply; a DMR bus multiplexes on DMRGateway, a YSF/NXDN bus displaces its gateway (the render + apply enforce the mutual exclusion, so the template needs no per-instance `Conflicts=`).
+This repository ships **no unit files**. Every `.deb` here carries a daemon binary and nothing else; configuration and units are rendered and managed by waypointd, and the units themselves are installed by the Waypoint image.
+
+That was not always true in practice. `systemd/waypoint-bus@.service` — the templated unit for an RFC-0003 mode bus — lived here, outside every `nfpm.yaml`, so no package installed it and no node ever received it. It has moved to the image alongside the eleven gateway units, together with the `waypoint-bus` binary it names, which was likewise never built or released ([waypoint#109](https://github.com/KN4OQW/waypoint/issues/109)). Anything that needs to reach a node needs a delivery mechanism; a file in this repo is not one.
