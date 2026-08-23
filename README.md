@@ -6,7 +6,7 @@ Upstream moved to an MQTT data plane in May 2026 (MMDVM-Host rename, libmosquitt
 
 | Component | Upstream | Pin |
 |---|---|---|
-| MMDVM-Host | [KN4OQW/MMDVM-Host](https://github.com/KN4OQW/MMDVM-Host) (fork of g4klx) | `71e598c` (g4klx `43edd65` + M17 restored + deferred CW Id) |
+| MMDVM-Host | [KN4OQW/MMDVM-Host](https://github.com/KN4OQW/MMDVM-Host) (fork of g4klx) | `95a8e1d` (g4klx `dea6e9b` + M17 restored + deferred CW Id + inbound Talker Alias) |
 | DMRGateway | [g4klx/DMRGateway](https://github.com/g4klx/DMRGateway) | `79edbc4` (MQTT era) |
 | YSFGateway (+ DGIdGateway, YSFParrot) | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` (MQTT era) |
 | P25Gateway (+ P25Parrot) | [g4klx/P25Clients](https://github.com/g4klx/P25Clients) | `9751c6e` (MQTT era) |
@@ -48,7 +48,7 @@ Daemon packages are versioned `1:0~git<upstream-date>.<7-sha>+wp<n>`:
 
 The `0~git` prefix sorts *below* any future real upstream release version, so a tagged upstream release will always upgrade cleanly over these snapshots.
 
-The `waypoint-stack` metapackage (`arch: all`) carries a single stack version (currently `0.3.0`) and depends on the **exact** versions of every daemon package, epoch included. Installing it pulls the whole stack at one known-good version set; bump its version whenever any daemon package changes. The metapackage needs no epoch of its own — plain semver was already ordered.
+The `waypoint-stack` metapackage (`arch: all`) carries a single stack version (currently `0.4.0`) and depends on the **exact** versions of every daemon package, epoch included. Installing it pulls the whole stack at one known-good version set; bump its version whenever any daemon package changes. The metapackage needs no epoch of its own — plain semver was already ordered.
 
 #### Why the date is there
 
@@ -78,7 +78,7 @@ Two packages were in exactly that position (`waypoint-mmdvmhost`, `waypoint-m17g
 
 | Package | Binary (`/usr/bin/`) | Upstream | Pin |
 |---|---|---|---|
-| `waypoint-mmdvmhost` | `MMDVM-Host` | [KN4OQW/MMDVM-Host](https://github.com/KN4OQW/MMDVM-Host) (fork of g4klx) | `71e598c` |
+| `waypoint-mmdvmhost` | `MMDVM-Host` | [KN4OQW/MMDVM-Host](https://github.com/KN4OQW/MMDVM-Host) (fork of g4klx) | `95a8e1d` |
 | `waypoint-dmrgateway` | `DMRGateway` | [g4klx/DMRGateway](https://github.com/g4klx/DMRGateway) | `79edbc4` |
 | `waypoint-ysfgateway` | `YSFGateway` | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` |
 | `waypoint-dgidgateway` | `DGIdGateway` | [g4klx/YSFClients](https://github.com/g4klx/YSFClients) | `2b480aa` |
