@@ -12,7 +12,7 @@ platform: linux
 # sha-only one whenever the sha began with a letter (dpkg compares the leading
 # non-digit run first), and those packages could never upgrade. See README.md,
 # "Version convention".
-version: "0~git20260729.71e598c+wp1"
+version: "0~git20260823.95a8e1d+wp1"
 version_schema: none
 epoch: "1"
 section: hamradio

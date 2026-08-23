@@ -12,7 +12,7 @@
 name: waypoint-stack
 arch: all
 platform: linux
-version: "0.3.0"
+version: "0.4.0"
 section: hamradio
 priority: optional
 maintainer: "Waypoint <clintchance@gmail.com>"
@@ -28,7 +28,7 @@ description: |
   the whole stack at one known-good version set. Configuration and systemd units
   are rendered and managed by waypointd.
 depends:
-  - waypoint-mmdvmhost (= 1:0~git20260729.71e598c+wp1)
+  - waypoint-mmdvmhost (= 1:0~git20260823.95a8e1d+wp1)
   - waypoint-dmrgateway (= 1:0~git20260406.79edbc4+wp1)
   - waypoint-ysfgateway (= 1:0~git20260410.2b480aa+wp1)
   - waypoint-dgidgateway (= 1:0~git20260410.2b480aa+wp1)
