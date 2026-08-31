@@ -2,3 +2,5 @@
 /src/
 # Build artifacts.
 /out/
+# Agent worktrees are checkouts of this repo, not content for it.
+/.claude/
